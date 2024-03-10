@@ -4,16 +4,35 @@ using Newtonsoft.Json;
 
 namespace serverDatabaseNormalization.Controllers;
 
-public class UserAuthController : RootController
+public class UserController : RootController
 {
     private static UserModel _userModel = new();
     
+    /// <summary>
+    /// Получение логина 
+    /// </summary>
+    /// <returns></returns>
     [HttpGet]
     public string? OutputLogin()
     {
         return _userModel.Login;
     }
+    
+    /// <summary>
+    /// Получение рейтинга
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet]
+    public int Score()
+    {
+        return _userModel.CurrentScore;
+    }
 
+    /// <summary>
+    /// Авторизация
+    /// </summary>
+    /// <param name="userModelJson"></param>
+    /// <returns></returns>
     [HttpPost]
     public UserModel Auth(object userModelJson)
     {
@@ -25,6 +44,11 @@ public class UserAuthController : RootController
         return _userModel;
     }
     
+    /// <summary>
+    /// Регистрация
+    /// </summary>
+    /// <param name="userModelJson"></param>
+    /// <returns></returns>
     [HttpPost]
     public UserModel Regist(object userModelJson)
     {

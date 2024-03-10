@@ -14,4 +14,9 @@ public class UserModel
     /// Пароль
     /// </summary>
     public string? Password { get; set; }
+    
+    /// <summary>
+    /// Количество набранных баллов за последнюю попытку
+    /// </summary>
+    public int CurrentScore { get; set; }
 }
