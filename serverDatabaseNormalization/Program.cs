@@ -25,7 +25,8 @@ public class Program
         app.UseHttpsRedirection();
 
         app.UseAuthorization();
-
+        
+        app.UseCors(corsPolicyBuilder => corsPolicyBuilder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
         app.MapControllers();
 
