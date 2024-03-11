@@ -10,7 +10,7 @@ public class UserModel
     /// <summary>
     /// Уникальный идентификатор пользователя
     /// </summary>
-    internal Guid Id { get; set; } = Guid.NewGuid();
+    internal Guid Id { get; set; }
     
     /// <summary>
     /// Логин

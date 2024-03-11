@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.Data.SqlClient;
 using Microsoft.AspNetCore.Mvc;
 using serverDatabaseNormalization.Models;
 using Newtonsoft.Json;
@@ -6,26 +8,37 @@ using serverDatabaseNormalization.Storage;
 namespace serverDatabaseNormalization.Controllers;
 
 /// <summary>
-/// Операции с пользователем
+/// Операции с пользователями
 /// </summary>
 public class UserController : RootController
 {
     /// <summary>
+    /// База данных
+    /// </summary>
+    readonly DbContext _db = new DbContext();
+    
+    /// <summary>
+    /// Текущий пользователь
+    /// </summary>
+    private static UserModel _userModel = new();
+    
+    /// <summary>
     /// Проверка соединения с базой 
     /// </summary>
-    /// <returns>Модели пользователей</returns>
+    /// <returns>Список параметров базы</returns>
     [HttpGet]
     public List<string?> DbContext()
     {
-        Storage.DbContext db = new DbContext();
-        db.connection.Open();
-        List<string?> dbInfo = new List<string?>()
+        _db.connection.Open();
+        
+        List<string?> dbInfo = new List<string?>
         {
-            db.connection.ConnectionString,
-            db.connection.Database,
-            db.connection.DataSource,
+            _db.connection.ConnectionString,
+            _db.connection.Database,
         };
-        db.connection.Close();
+        
+        _db.connection.Close();
+        
         return dbInfo;
     }
     
@@ -38,18 +51,32 @@ public class UserController : RootController
     {
         List<UserModel> userModels = new List<UserModel>();
         
-        // Тут лезем в БД и возвращаем всех юзеров
+        _db.connection.Open();
+        
+        SqlCommand command = new SqlCommand("SELECT * FROM Users", _db.connection);
+        SqlDataReader reader = command.ExecuteReader();
+        
+        if (!reader.HasRows) return userModels;
+        
+        while (reader.Read())
+        {
+            userModels.Add(new UserModel()
+            {
+                Id = (Guid)reader["ID"],
+                Login = reader["login"].ToString(),
+                Date = (DateTime)reader["dateOfBirth"],
+                Gender = reader["gender"].ToString(),
+                Score = (int)reader["score"],
+            });
+        }
+
+        _db.connection.Close();
         
         return userModels;
     }
     
     /// <summary>
-    /// Текущий пользователь
-    /// </summary>
-    private static UserModel _userModel = new();
-    
-    /// <summary>
-    /// Получение всего пользователя 
+    /// Получение всего текущего пользователя 
     /// </summary>
     /// <returns>Модель пользователя</returns>
     [HttpGet]
@@ -86,16 +113,31 @@ public class UserController : RootController
     [HttpPost]
     public bool Auth(object userAuthJson)
     {
-        bool flag = true;
-        
         UserModel? userModelDes = JsonConvert.DeserializeObject<UserModel>(userAuthJson.ToString() ?? string.Empty);
-        /*
-        здесь в базу = userModelDes?.Login;
-        здесь в базу = userModelDes?.Password;
-        если есть - тру и заполняем модель
-        иначе фалс
-        */
-        return flag;
+        
+        _db.connection.Open();
+        
+        SqlCommand command = new SqlCommand("SELECT ID, login, dateOfBirth, gender, score, password FROM Users", _db.connection);
+        SqlDataReader reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            
+            if ((reader["login"].ToString() != userModelDes?.Login) ||
+                (reader["password"].ToString() != userModelDes?.Password)) continue;
+            
+            _userModel.Id = (Guid)reader["ID"];
+            _userModel.Login = reader["login"].ToString();
+            _userModel.Password = reader["password"].ToString();
+            _userModel.Date = (DateTime)reader["dateOfBirth"];
+            _userModel.Gender = reader["gender"].ToString();
+            _userModel.Score = (int)reader["score"];
+                
+            _db.connection.Close();
+            return true;
+        }
+        _db.connection.Close();
+        return false;
     }
 
     /// <summary>
@@ -127,18 +169,42 @@ public class UserController : RootController
     /// <summary>
     /// Изменение рейтинга
     /// </summary>
-    /// <param name="userScoreJson">JSON-объектное представление рейтинга пользователя</param>
+    /// <param name="userModelJson">JSON-объектное представление ID пользователя</param>
     /// <returns>Модель пользователя</returns>
     [HttpPost]
-    public bool ChangeScore(object userScoreJson)
+    public bool ChangeScore(object userModelJson)
     {
-        UserModel? userModelDes = JsonConvert.DeserializeObject<UserModel>(userScoreJson.ToString() ?? string.Empty);
+        bool flag = false;
         
-        bool flag = true;
-        /*
+        UserModel? userModelDes = JsonConvert.DeserializeObject<UserModel>(userModelJson.ToString() ?? string.Empty);
+        
+        _db.connection.Open();
+        
+        SqlCommand command = new SqlCommand("SELECT login FROM Users", _db.connection);
+        SqlDataReader reader = command.ExecuteReader();
+        
+        while (reader.Read())
+        {
+            if (reader["login"].ToString() == userModelDes?.Login)
+            {
+                flag = true;
+                break;
+            }
+        }
+        
+        _db.connection.Close();
 
-        пытаемя поменять рейтинг юзера и возвращаем буль
-        */
-        return flag;
+        if (!flag) return false;
+        
+        _db.connection.Open();
+            
+        SqlCommand commandUpdate = new SqlCommand(
+            $"UPDATE Users SET score = {userModelDes.Score} WHERE login = '{userModelDes.Login}'", _db.connection);
+        commandUpdate.ExecuteNonQuery();
+            
+        _db.connection.Close();
+
+        return true;
+
     }
 }
