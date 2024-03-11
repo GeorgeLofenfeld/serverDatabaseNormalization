@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using System.Data.SqlClient;
 using Microsoft.AspNetCore.Mvc;
 using serverDatabaseNormalization.Models;
@@ -21,59 +20,6 @@ public class UserController : RootController
     /// Текущий пользователь
     /// </summary>
     private static UserModel _userModel = new();
-    
-    /// <summary>
-    /// Проверка соединения с базой 
-    /// </summary>
-    /// <returns>Список параметров базы</returns>
-    [HttpGet]
-    public List<string?> DbContext()
-    {
-        _db.connection.Open();
-        
-        List<string?> dbInfo = new List<string?>
-        {
-            _db.connection.ConnectionString,
-            _db.connection.Database,
-        };
-        
-        _db.connection.Close();
-        
-        return dbInfo;
-    }
-    
-    /// <summary>
-    /// Получение всех пользователей 
-    /// </summary>
-    /// <returns>Модели пользователей</returns>
-    [HttpGet]
-    public List<UserModel>? Users()
-    {
-        List<UserModel> userModels = new List<UserModel>();
-        
-        _db.connection.Open();
-        
-        SqlCommand command = new SqlCommand("SELECT * FROM Users", _db.connection);
-        SqlDataReader reader = command.ExecuteReader();
-        
-        if (!reader.HasRows) return userModels;
-        
-        while (reader.Read())
-        {
-            userModels.Add(new UserModel()
-            {
-                Id = (Guid)reader["ID"],
-                Login = reader["login"].ToString(),
-                Date = (DateTime)reader["dateOfBirth"],
-                Gender = reader["gender"].ToString(),
-                Score = (int)reader["score"],
-            });
-        }
-
-        _db.connection.Close();
-        
-        return userModels;
-    }
     
     /// <summary>
     /// Получение всего текущего пользователя 
@@ -172,11 +118,11 @@ public class UserController : RootController
     /// <param name="userModelJson">JSON-объектное представление ID пользователя</param>
     /// <returns>Модель пользователя</returns>
     [HttpPost]
-    public bool ChangeScore(object userModelJson)
+    public bool ChangeScore(object userScoreJson)
     {
         bool flag = false;
         
-        UserModel? userModelDes = JsonConvert.DeserializeObject<UserModel>(userModelJson.ToString() ?? string.Empty);
+        UserModel? userModelDes = JsonConvert.DeserializeObject<UserModel>(userScoreJson.ToString() ?? string.Empty);
         
         _db.connection.Open();
         
@@ -185,11 +131,11 @@ public class UserController : RootController
         
         while (reader.Read())
         {
-            if (reader["login"].ToString() == userModelDes?.Login)
-            {
-                flag = true;
-                break;
-            }
+            if (reader["login"].ToString() != userModelDes?.Login) continue;
+            
+            flag = true;
+            
+            break;
         }
         
         _db.connection.Close();
