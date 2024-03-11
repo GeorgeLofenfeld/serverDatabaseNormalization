@@ -36,23 +36,6 @@ public class UserController : RootController
     {
         return _userModel.Login;
     }
-    
-    /// <summary>
-    /// Успешность авторизации или регистрации
-    /// </summary>
-    /// <returns>Флаг успешности</returns>
-    [HttpGet]
-    public string? Succsess()
-    {
-        bool flag = true;
-
-        if (flag)
-        {
-            return _userModel.Login;
-        }
-        
-        return "badname";
-    }
 
     /// <summary>
     /// Авторизация
