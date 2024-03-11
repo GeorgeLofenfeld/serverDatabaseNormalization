@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using serverDatabaseNormalization.Models;
 using Newtonsoft.Json;
+using serverDatabaseNormalization.Storage;
 
 namespace serverDatabaseNormalization.Controllers;
 
@@ -9,6 +10,8 @@ namespace serverDatabaseNormalization.Controllers;
 /// </summary>
 public class UserController : RootController
 {
+    private DbContext db = new DbContext();
+    
     /// <summary>
     /// Пользователь
     /// </summary>
@@ -35,30 +38,20 @@ public class UserController : RootController
     }
     
     /// <summary>
-    /// Получение рейтинга
-    /// </summary>
-    /// <returns>Рейтинг пользователя</returns>
-    [HttpGet]
-    public int? ScoreGet()
-    {
-        return _userModel.CurrentScore;
-    }
-    
-    /// <summary>
     /// Успешность авторизации или регистрации
     /// </summary>
     /// <returns>Флаг успешности</returns>
     [HttpGet]
-    public bool Succsess()
+    public string? Succsess()
     {
         bool flag = true;
 
         if (flag)
         {
-            return true;
+            return _userModel.Login;
         }
         
-        return false;
+        return "badname";
     }
 
     /// <summary>
@@ -93,22 +86,10 @@ public class UserController : RootController
         _userModel.Password = userModelDes?.Password;
         _userModel.Gender = userModelDes?.Gender;
         _userModel.Date = userModelDes?.Date;
+
+        db.Users.Add(_userModel);
+        db.SaveChanges();
         
         return _userModel;
-    }
-
-    /// <summary>
-    /// Изменение количества очков пользователя
-    /// </summary>
-    /// <param name="scoreJson">JSON-объектное представление количества очков пользователя</param>
-    /// <returns>Новое количетсов очков пользователя</returns>
-    [HttpPost]
-    public int? ScorePost(object scoreJson)
-    {
-        UserModel? scoreDes = JsonConvert.DeserializeObject<UserModel>(scoreJson.ToString() ?? string.Empty);
-
-        _userModel.CurrentScore = scoreDes?.CurrentScore;
-        
-        return _userModel.CurrentScore;
     }
 }
