@@ -5,7 +5,10 @@ namespace serverDatabaseNormalization.Models;
 /// </summary>
 public class UserModel
 {
-    public Guid Id { get; set; }
+    /// <summary>
+    /// Уникальный идентификатор пользователя
+    /// </summary>
+    internal Guid Id { get; set; }
     
     /// <summary>
     /// Логин
@@ -18,14 +21,22 @@ public class UserModel
     public string? Password { get; set; }
     
     /// <summary>
-    /// Количество набранных баллов за последнюю попытку
-    /// </summary>
-    public int CurrentScore { get; set; }
-    
-    /// <summary>
     /// Пол пользователя
     /// </summary>
     public string? Gender { get; set; }
     
+    /// <summary>
+    /// Дата рождения
+    /// </summary>
+    public DateTime? Date { get; set; }
+    
+    /// <summary>
+    /// Флаг запоминания входа
+    /// </summary>
     public bool? Remember { get; set; }
+    
+    /// <summary>
+    /// Количество набранных баллов за последнюю попытку
+    /// </summary>
+    public int? CurrentScore { get; set; }
 }
