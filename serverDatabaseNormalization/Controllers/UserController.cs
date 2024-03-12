@@ -14,7 +14,7 @@ public class UserController : RootController
     /// <summary>
     /// База данных
     /// </summary>
-    readonly DbContext _db = new DbContext();
+    private readonly DbContext _db = new DbContext();
     
     /// <summary>
     /// Текущий пользователь
@@ -72,11 +72,8 @@ public class UserController : RootController
             if ((reader["login"].ToString() != userModelDes?.Login) ||
                 (reader["password"].ToString() != userModelDes?.Password)) continue;
             
-            _userModel.Id = (Guid)reader["ID"];
             _userModel.Login = reader["login"].ToString();
             _userModel.Password = reader["password"].ToString();
-            _userModel.Date = (DateTime)reader["dateOfBirth"];
-            _userModel.Gender = reader["gender"].ToString();
             _userModel.Score = (int)reader["score"];
                 
             _db.connection.Close();

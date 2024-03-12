@@ -15,7 +15,7 @@ public class DatabaseController : RootController
     /// </summary>
     /// <returns>Список параметров базы</returns>
     [HttpGet]
-    public List<string?> DbContext()
+    public List<string?> Context()
     {
         _db.connection.Open();
         
@@ -35,7 +35,7 @@ public class DatabaseController : RootController
     /// </summary>
     /// <returns>Модели пользователей</returns>
     [HttpGet]
-    public List<UserModel>? DbUsers()
+    public List<UserModel>? Users()
     {
         List<UserModel> userModels = new List<UserModel>();
         
@@ -50,10 +50,7 @@ public class DatabaseController : RootController
         {
             userModels.Add(new UserModel()
             {
-                Id = (Guid)reader["ID"],
                 Login = reader["login"].ToString(),
-                Date = (DateTime)reader["dateOfBirth"],
-                Gender = reader["gender"].ToString(),
                 Score = (int)reader["score"],
             });
         }
